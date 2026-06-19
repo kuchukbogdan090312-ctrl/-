@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUMIÈRE — Высокая мода</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── RESET & TOKENS ─────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --ink:      #0D0D0D;
+      --paper:    #F5F0E8;
+      --blush:    #C9A99A;
+      --gold:     #B8924A;
+      --muted:    #2A2520;
+      --mid:      #7A6E68;
+      --light:    #EDE8DF;
+      --white:    #FDFAF5;
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--ink);
+      color: var(--paper);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── CUSTOM CURSOR ───────────────────────────────── */
+    #cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 10px; height: 10px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.25s var(--ease-out), height 0.25s var(--ease-out), background 0.2s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed;
+      top: 0; left: 0;
+      width: 36px; height: 36px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.35s var(--ease-out), width 0.3s var(--ease-out), height 0.3s var(--ease-out), opacity 0.2s;
+      opacity: 0.6;
+    }
+    body:hover #cursor-ring { opacity: 1; }
+    .hover-target:hover ~ #cursor,
+    body.hovering #cursor { width: 20px; height: 20px; }
+    body.hovering #cursor-ring { width: 56px; height: 56px; opacity: 0.3; }
+
+    /* ─── LOADER ──────────────────────────────────────── */
+    #loader {
+      position: fixed; inset: 0;
+      background: var(--ink);
+      z-index: 9000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      transition: opacity 0.7s var(--ease-out), visibility 0.7s;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-text {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 6vw, 5rem);
+      letter-spacing: 0.35em;
+      color: var(--paper);
+      overflow: hidden;
+    }
+    .loader-text span {
+      display: inline-block;
+      transform: translateY(110%);
+      animation: slideUp 0.9s var(--ease-out) forwards;
+    }
+    .loader-text span:nth-child(2) { animation-delay: 0.08s; }
+    .loader-text span:nth-child(3) { animation-delay: 0.16s; }
+    .loader-text span:nth-child(4) { animation-delay: 0.24s; }
+    .loader-text span:nth-child(5) { animation-delay: 0.32s; }
+    .loader-text span:nth-child(6) { animation-delay: 0.40s; }
+    .loader-text span:nth-child(7) { animation-delay: 0.48s; }
+    .loader-line {
+      width: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      animation: expandLine 1.2s 0.6s var(--ease-out) forwards;
+    }
+    @keyframes slideUp {
+      to { transform: translateY(0); }
+    }
+    @keyframes expandLine {
+      to { width: min(300px, 60vw); }
+    }
+
+    /* ─── NAVBAR ──────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.4s, padding 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(13, 13, 13, 0.9);
+      backdrop-filter: blur(16px);
+      padding: 1rem 3rem;
+    }
+    .nav-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.3em;
+      color: var(--paper);
+      text-decoration: none;
+      font-style: italic;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--paper);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      transition: opacity 0.2s, color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.3s var(--ease-out);
+    }
+    .nav-links a:hover { opacity: 1; color: var(--gold); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .nav-icon {
+      background: none;
+      border: none;
+      cursor: none;
+      color: var(--paper);
+      opacity: 0.7;
+      transition: opacity 0.2s, transform 0.2s;
+      position: relative;
+    }
+    .nav-icon:hover { opacity: 1; transform: scale(1.1); }
+    .cart-count {
+      position: absolute;
+      top: -6px; right: -8px;
+      background: var(--gold);
+      color: var(--ink);
+      font-size: 0.6rem;
+      font-weight: 600;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: none;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 1.5px;
+      background: var(--paper);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    /* ─── HERO ────────────────────────────────────────── */
+    #hero {
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 10rem 4rem 6rem 5rem;
+      position: relative;
+      z-index: 2;
+    }
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeSlideRight 0.8s 1.5s var(--ease-out) forwards;
+    }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 5.5vw, 6rem);
+      line-height: 1.05;
+      font-weight: 400;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .hero-title .line {
+      display: block;
+      overflow: hidden;
+    }
+    .hero-title .line span {
+      display: block;
+      transform: translateY(110%);
+      opacity: 0;
+    }
+    .hero-title .line:nth-child(1) span { animation: slideUp 1s 1.6s var(--ease-out) forwards; }
+    .hero-title .line:nth-child(2) span { animation: slideUp 1s 1.75s var(--ease-out) forwards; }
+    .hero-title .line:nth-child(3) span { animation: slideUp 1s 1.9s var(--ease-out) forwards; }
+    .hero-title em { font-style: italic; color: var(--blush); }
+    .hero-desc {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--mid);
+      max-width: 36ch;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeSlideRight 0.8s 2.1s var(--ease-out) forwards;
+    }
+    .hero-ctas {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeSlideRight 0.8s 2.25s var(--ease-out) forwards;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--gold);
+      color: var(--ink);
+      padding: 0.9rem 2rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.25s, transform 0.25s, gap 0.3s;
+      cursor: none;
+    }
+    .btn-primary:hover { background: var(--blush); gap: 1.25rem; }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      border: 1px solid rgba(245, 240, 232, 0.3);
+      color: var(--paper);
+      padding: 0.9rem 2rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 500;
+      transition: border-color 0.25s, color 0.25s, gap 0.3s;
+      cursor: none;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); gap: 1.25rem; }
+
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-image-wrap {
+      position: absolute;
+      inset: 0;
+      transform: scale(1.08);
+      animation: heroScale 1.5s 1s var(--ease-out) forwards;
+    }
+    @keyframes heroScale { to { transform: scale(1); } }
+    .hero-image-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      filter: saturate(0.7) contrast(1.1);
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, var(--ink) 0%, transparent 30%, transparent 70%, rgba(13,13,13,0.2) 100%);
+    }
+    .hero-stats {
+      position: absolute;
+      bottom: 3rem;
+      right: 3rem;
+      display: flex;
+      gap: 2.5rem;
+      z-index: 3;
+      opacity: 0;
+      animation: fadeSlideRight 0.8s 2.4s var(--ease-out) forwards;
+    }
+    .stat { text-align: right; }
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--paper);
+      line-height: 1;
+      display: block;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-top: 0.25rem;
+      display: block;
+    }
+
+    .hero-scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      opacity: 0;
+      animation: fadeSlideRight 0.8s 2.8s var(--ease-out) forwards;
+    }
+    .scroll-line {
+      width: 40px; height: 1px;
+      background: var(--mid);
+      position: relative;
+      overflow: hidden;
+    }
+    .scroll-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: var(--gold);
+      animation: scrollLine 2s 3s ease-in-out infinite;
+    }
+    @keyframes scrollLine { 0% { left: -100%; } 50% { left: 0%; } 100% { left: 100%; } }
+    .scroll-text {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mid);
+    }
+
+    @keyframes fadeSlideRight {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ─── MARQUEE TICKER ─────────────────────────────── */
+    .ticker {
+      overflow: hidden;
+      background: var(--gold);
+      padding: 0.7rem 0;
+    }
+    .ticker-inner {
+      display: flex;
+      width: max-content;
+      animation: tickerScroll 18s linear infinite;
+    }
+    .ticker-item {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--ink);
+      font-weight: 600;
+      padding: 0 3rem;
+      white-space: nowrap;
+    }
+    .ticker-dot {
+      font-size: 0.4rem;
+      vertical-align: middle;
+      opacity: 0.5;
+    }
+    @keyframes tickerScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ─── SECTION SHARED ──────────────────────────────── */
+    section { padding: 7rem 5rem; }
+    .section-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.25rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 1.5rem;
+    }
+    .section-title em { font-style: italic; color: var(--blush); }
+
+    /* ─── FEATURED COLLECTIONS ────────────────────────── */
+    #collections { background: var(--ink); }
+    .collections-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 4rem;
+    }
+    .collections-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 1.5rem;
+    }
+    .collection-card {
+      position: relative;
+      overflow: hidden;
+      cursor: none;
+      background: var(--muted);
+    }
+    .collection-card:first-child {
+      grid-row: span 2;
+    }
+    .card-img-wrap {
+      overflow: hidden;
+      aspect-ratio: 4/5;
+    }
+    .collection-card:first-child .card-img-wrap {
+      aspect-ratio: 3/4;
+      height: 100%;
+    }
+    .card-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s var(--ease-out), filter 0.5s;
+      filter: saturate(0.6);
+    }
+    .collection-card:hover .card-img-wrap img {
+      transform: scale(1.07);
+      filter: saturate(0.9);
+    }
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(13,13,13,0.85) 0%, transparent 50%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem;
+    }
+    .card-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+    .card-name {
+      font-family: var(--font-display);
+      font-size: clamp(1.2rem, 2vw, 1.8rem);
+      font-weight: 400;
+      margin-bottom: 0.75rem;
+    }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--paper);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s;
+      cursor: none;
+    }
+    .collection-card:hover .card-link { opacity: 1; transform: translateY(0); }
+    .card-arrow { transition: transform 0.3s; }
+    .card-link:hover .card-arrow { transform: translateX(4px); }
+
+    /* ─── PRODUCTS ────────────────────────────────────── */
+    #products { background: var(--paper); color: var(--ink); }
+    #products .section-eyebrow { color: var(--gold); }
+    #products .section-title { color: var(--ink); }
+    #products .section-title em { color: var(--blush); }
+
+    .products-filters {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 0.5rem 1.25rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid rgba(13,13,13,0.2);
+      color: var(--ink);
+      cursor: none;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      font-family: var(--font-body);
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem 1.25rem;
+    }
+    .product-card {
+      cursor: none;
+      group: true;
+    }
+    .product-img-wrap {
+      position: relative;
+      overflow: hidden;
+      background: var(--light);
+      aspect-ratio: 3/4;
+      margin-bottom: 1rem;
+    }
+    .product-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s var(--ease-out);
+    }
+    .product-card:hover .product-img-wrap img { transform: scale(1.05); }
+    .product-badge {
+      position: absolute;
+      top: 0.75rem; left: 0.75rem;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.6rem;
+    }
+    .product-badge.new { background: var(--gold); color: var(--ink); }
+    .product-badge.sale { background: var(--blush); color: var(--ink); }
+    .product-quick-add {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(13,13,13,0.9);
+      color: var(--paper);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.85rem;
+      text-align: center;
+      transform: translateY(100%);
+      transition: transform 0.35s var(--ease-out);
+      border: none;
+      cursor: none;
+      font-family: var(--font-body);
+      width: 100%;
+    }
+    .product-card:hover .product-quick-add { transform: translateY(0); }
+    .product-wishlist {
+      position: absolute;
+      top: 0.75rem; right: 0.75rem;
+      background: rgba(245,240,232,0.9);
+      border: none;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: none;
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .product-card:hover .product-wishlist { opacity: 1; transform: scale(1); }
+    .product-wishlist:hover svg { fill: var(--blush); stroke: var(--blush); }
+    .product-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 400;
+      margin-bottom: 0.35rem;
+      color: var(--ink);
+    }
+    .product-material {
+      font-size: 0.72rem;
+      color: var(--mid);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+    .product-price {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .price-current { font-size: 0.9rem; font-weight: 500; color: var(--ink); }
+    .price-old { font-size: 0.82rem; color: var(--mid); text-decoration: line-through; }
+    .price-sale { color: var(--blush); }
+
+    /* ─── BRAND STORY ─────────────────────────────────── */
+    #story {
+      background: var(--muted);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+    .story-visual {
+      position: relative;
+    }
+    .story-img-main {
+      width: 80%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.6);
+      position: relative;
+      z-index: 1;
+    }
+    .story-img-accent {
+      position: absolute;
+      bottom: -3rem;
+      right: 0;
+      width: 50%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      filter: saturate(0.8);
+      border: 4px solid var(--muted);
+    }
+    .story-year {
+      position: absolute;
+      top: 2rem;
+      right: 3rem;
+      font-family: var(--font-display);
+      font-size: 7rem;
+      font-weight: 700;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(184,146,74,0.3);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    .story-text .section-eyebrow { color: var(--gold); }
+    .story-text .section-title { color: var(--paper); }
+    .story-body {
+      font-size: 0.9rem;
+      line-height: 1.9;
+      color: var(--mid);
+      max-width: 52ch;
+      margin-bottom: 2.5rem;
+    }
+    .story-pillars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .pillar-num {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 400;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .pillar-label {
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--paper);
+      margin-bottom: 0.3rem;
+    }
+    .pillar-desc { font-size: 0.78rem; color: var(--mid); line-height: 1.5; }
+
+    /* ─── HORIZONTAL SCROLL ───────────────────────────── */
+    #editorial {
+      background: var(--ink);
+      padding: 7rem 0;
+      overflow: hidden;
+    }
+    .editorial-header {
+      padding: 0 5rem;
+      margin-bottom: 3rem;
+    }
+    .h-scroll-track {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      padding: 0 5rem 2rem;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-snap-type: x mandatory;
+    }
+    .h-scroll-track::-webkit-scrollbar { display: none; }
+    .editorial-card {
+      flex: 0 0 min(320px, 80vw);
+      scroll-snap-align: start;
+      cursor: none;
+    }
+    .editorial-img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      margin-bottom: 1rem;
+      filter: saturate(0.5);
+      transition: filter 0.4s;
+    }
+    .editorial-card:hover .editorial-img { filter: saturate(1); }
+    .editorial-issue {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+    }
+    .editorial-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 400;
+      margin-bottom: 0.4rem;
+    }
+    .editorial-subtitle {
+      font-size: 0.78rem;
+      color: var(--mid);
+    }
+
+    /* ─── NEWSLETTER ──────────────────────────────────── */
+    #newsletter {
+      background: var(--paper);
+      color: var(--ink);
+      text-align: center;
+      padding: 8rem 5rem;
+    }
+    #newsletter .section-eyebrow { color: var(--gold); }
+    #newsletter .section-title { color: var(--ink); margin-bottom: 1rem; }
+    .newsletter-sub {
+      font-size: 0.9rem;
+      color: var(--mid);
+      max-width: 45ch;
+      margin: 0 auto 3rem;
+      line-height: 1.7;
+    }
+    .newsletter-form {
+      display: flex;
+      gap: 0;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .newsletter-input {
+      flex: 1;
+      padding: 0.95rem 1.5rem;
+      border: 1px solid rgba(13,13,13,0.25);
+      background: transparent;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .newsletter-input::placeholder { color: var(--mid); }
+    .newsletter-input:focus { border-color: var(--gold); }
+    .newsletter-btn {
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      padding: 0.95rem 1.75rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: none;
+      font-family: var(--font-body);
+      transition: background 0.25s;
+      white-space: nowrap;
+    }
+    .newsletter-btn:hover { background: var(--gold); color: var(--ink); }
+
+    /* ─── FOOTER ──────────────────────────────────────── */
+    footer {
+      background: var(--muted);
+      padding: 5rem 5rem 3rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 4rem;
+      margin-bottom: 4rem;
+    }
+    .footer-brand-name {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-style: italic;
+      letter-spacing: 0.2em;
+      margin-bottom: 1rem;
+      color: var(--paper);
+    }
+    .footer-brand-desc {
+      font-size: 0.82rem;
+      line-height: 1.8;
+      color: var(--mid);
+      max-width: 30ch;
+      margin-bottom: 1.5rem;
+    }
+    .footer-social {
+      display: flex;
+      gap: 1rem;
+    }
+    .social-link {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(245,240,232,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--mid);
+      text-decoration: none;
+      font-size: 0.75rem;
+      transition: border-color 0.2s, color 0.2s;
+      cursor: none;
+    }
+    .social-link:hover { border-color: var(--gold); color: var(--gold); }
+    .footer-col-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--paper);
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .footer-links a {
+      color: var(--mid);
+      text-decoration: none;
+      font-size: 0.82rem;
+      transition: color 0.2s;
+      cursor: none;
+    }
+    .footer-links a:hover { color: var(--paper); }
+    .footer-bottom {
+      border-top: 1px solid rgba(245,240,232,0.08);
+      padding-top: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-copy { font-size: 0.75rem; color: var(--mid); }
+    .footer-legal {
+      display: flex;
+      gap: 2rem;
+    }
+    .footer-legal a {
+      font-size: 0.75rem;
+      color: var(--mid);
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: none;
+    }
+    .footer-legal a:hover { color: var(--paper); }
+
+    /* ─── CART DRAWER ────────────────────────────────── */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(13,13,13,0.6);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s, visibility 0.35s;
+      backdrop-filter: blur(4px);
+    }
+    .cart-overlay.open { opacity: 1; visibility: visible; }
+    .cart-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(420px, 100vw);
+      background: var(--paper);
+      color: var(--ink);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform 0.5s var(--ease-out);
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-overlay.open .cart-drawer { transform: translateX(0); }
+    .cart-header {
+      padding: 2rem;
+      border-bottom: 1px solid rgba(13,13,13,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 400;
+    }
+    .cart-close {
+      background: none; border: none;
+      cursor: none;
+      color: var(--ink);
+      font-size: 1.2rem;
+      line-height: 1;
+      padding: 0.25rem;
+      transition: opacity 0.2s;
+    }
+    .cart-close:hover { opacity: 0.5; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+    .cart-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 1rem;
+      text-align: center;
+    }
+    .cart-empty-icon { font-size: 3rem; opacity: 0.2; }
+    .cart-empty-text { font-family: var(--font-display); font-size: 1.1rem; color: var(--mid); }
+    .cart-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(13,13,13,0.08);
+    }
+    .cart-item-img {
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      width: 80px;
+      background: var(--light);
+    }
+    .cart-item-name { font-family: var(--font-display); font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .cart-item-meta { font-size: 0.75rem; color: var(--mid); }
+    .cart-item-price { font-size: 0.9rem; font-weight: 500; }
+    .cart-item-remove {
+      background: none; border: none;
+      font-size: 0.75rem; color: var(--mid);
+      cursor: none; margin-top: 0.4rem;
+      text-decoration: underline;
+      padding: 0;
+    }
+    .cart-footer {
+      padding: 1.5rem 2rem;
+      border-top: 1px solid rgba(13,13,13,0.1);
+    }
+    .cart-total-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .cart-total-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--mid); }
+    .cart-total-price { font-family: var(--font-display); font-size: 1.5rem; }
+    .btn-checkout {
+      display: block;
+      width: 100%;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      padding: 1.1rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: none;
+      font-family: var(--font-body);
+      transition: background 0.25s;
+    }
+    .btn-checkout:hover { background: var(--gold); color: var(--ink); }
+
+    /* ─── MOBILE MENU ─────────────────────────────────── */
+    .mobile-menu {
+      position: fixed;
+      inset: 0;
+      background: var(--ink);
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2.5rem;
+      transform: translateY(-100%);
+      transition: transform 0.6s var(--ease-in-out);
+    }
+    .mobile-menu.open { transform: translateY(0); }
+    .mobile-menu a {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 8vw, 3.5rem);
+      color: var(--paper);
+      text-decoration: none;
+      font-style: italic;
+      transition: color 0.2s;
+    }
+    .mobile-menu a:hover { color: var(--gold); }
+
+    /* ─── REVEAL ANIMATIONS ──────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ─── TOAST ───────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 2rem; right: 2rem;
+      background: var(--ink);
+      color: var(--paper);
+      padding: 1rem 1.5rem;
+      font-size: 0.82rem;
+      z-index: 9000;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.4s var(--ease-out), opacity 0.4s;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      max-width: 300px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-icon { color: var(--gold); font-size: 1rem; }
+
+    /* ─── MEDIA QUERIES ───────────────────────────────── */
+    @media (max-width: 1100px) {
+      .products-grid { grid-template-columns: repeat(3, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 3rem; }
+      #story { gap: 4rem; }
+    }
+
+    @media (max-width: 900px) {
+      section { padding: 5rem 3rem; }
+      nav { padding: 1.25rem 2rem; }
+      nav.scrolled { padding: 0.85rem 2rem; }
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      #hero { grid-template-columns: 1fr; min-height: 100svh; }
+      .hero-left { padding: 8rem 3rem 4rem; }
+      .hero-right {
+        position: absolute; inset: 0;
+        opacity: 0.25;
+      }
+      .hero-overlay { background: var(--ink); opacity: 0.6; }
+      .hero-stats { bottom: 2rem; right: 2rem; }
+      .hero-scroll-hint { left: 3rem; }
+      .collections-grid { grid-template-columns: 1fr 1fr; }
+      .collection-card:first-child { grid-column: span 2; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+      #story { grid-template-columns: 1fr; gap: 4rem; }
+      .story-visual { order: -1; }
+      .story-img-main { width: 70%; }
+      #newsletter { padding: 6rem 3rem; }
+    }
+
+    @media (max-width: 600px) {
+      section { padding: 4rem 1.5rem; }
+      nav { padding: 1rem 1.5rem; }
+      nav.scrolled { padding: 0.75rem 1.5rem; }
+      .hero-left { padding: 7rem 1.5rem 3rem; }
+      .hero-stats { display: none; }
+      .collections-grid { grid-template-columns: 1fr; }
+      .collection-card:first-child { grid-column: span 1; }
+      .products-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem 0.75rem; }
+      .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+      .footer-legal { justify-content: center; }
+      .editorial-header { padding: 0 1.5rem; }
+      .h-scroll-track { padding: 0 1.5rem 1.5rem; }
+      .newsletter-form { flex-direction: column; }
+      .newsletter-btn { padding: 0.9rem; text-align: center; }
+      body { cursor: auto; }
+      #cursor, #cursor-ring { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── CURSOR ─────────────────────────────────────────── -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- ── LOADER ─────────────────────────────────────────── -->
+<div id="loader">
+  <div class="loader-text">
+    <span>L</span><span>U</span><span>M</span><span>I</span><span>È</span><span>R</span><span>E</span>
+  </div>
+  <div class="loader-line"></div>
+</div>
+
+<!-- ── MOBILE MENU ─────────────────────────────────────── -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#collections" onclick="closeMobileMenu()">Коллекции</a>
+  <a href="#products" onclick="closeMobileMenu()">Каталог</a>
+  <a href="#story" onclick="closeMobileMenu()">О бренде</a>
+  <a href="#editorial" onclick="closeMobileMenu()">Лукбук</a>
+  <a href="#newsletter" onclick="closeMobileMenu()">Контакты</a>
+</div>
+
+<!-- ── NAV ────────────────────────────────────────────── -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Lumière</a>
+  <ul class="nav-links">
+    <li><a href="#collections">Коллекции</a></li>
+    <li><a href="#products">Каталог</a></li>
+    <li><a href="#story">О бренде</a></li>
+    <li><a href="#editorial">Лукбук</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="nav-icon" aria-label="Поиск" onclick="showToast('Поиск', '🔍')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </button>
+    <button class="nav-icon" aria-label="Избранное" onclick="showToast('Добавлено в избранное', '♡')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </button>
+    <button class="nav-icon" aria-label="Корзина" onclick="openCart()" style="position:relative">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Меню" onclick="toggleMobileMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Осень / Зима 2025</p>
+    <h1 class="hero-title">
+      <span class="line"><span>Одевайтесь</span></span>
+      <span class="line"><span>как <em>поэзия</em></span></span>
+      <span class="line"><span>в движении</span></span>
+    </h1>
+    <p class="hero-desc">Каждая вещь создаётся с вниманием к деталям, которое не замечают — но всегда чувствуют.</p>
+    <div class="hero-ctas">
+      <a href="#collections" class="btn-primary">
+        Смотреть коллекцию
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#story" class="btn-outline">О бренде</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-image-wrap">
+      <img src="https://images.unsplash.com/photo-1649513867714-22daaed0c2a3?w=900&q=80" alt="Hero коллекция" loading="eager" />
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num">12</span>
+        <span class="stat-label">Лет на рынке</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">4K+</span>
+        <span class="stat-label">Клиентов</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    <span class="scroll-text">Прокрутить</span>
+  </div>
+</section>
+
+<!-- ── TICKER ──────────────────────────────────────────── -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- ── COLLECTIONS ─────────────────────────────────────── -->
+<section id="collections">
+  <div class="collections-header reveal">
+    <div>
+      <p class="section-eyebrow">Сезонные коллекции</p>
+      <h2 class="section-title">Избранные <em>образы</em></h2>
+    </div>
+    <a href="#products" class="btn-outline reveal reveal-delay-2">
+      Весь каталог
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="collections-grid">
+    <div class="collection-card reveal">
+      <div class="card-img-wrap">
+        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=700&q=80" alt="Вечерняя коллекция" loading="lazy" />
+      </div>
+      <div class="card-overlay">
+        <span class="card-tag">Featured</span>
+        <h3 class="card-name">Вечерняя коллекция</h3>
+        <a href="#products" class="card-link">
+          Смотреть образы
+          <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="collection-card reveal reveal-delay-1">
+      <div class="card-img-wrap">
+        <img src="https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=600&q=80" alt="Casual Luxe" loading="lazy" />
+      </div>
+      <div class="card-overlay">
+        <span class="card-tag">Новинка</span>
+        <h3 class="card-name">Casual Luxe</h3>
+        <a href="#products" class="card-link">
+          Смотреть образы
+          <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="collection-card reveal reveal-delay-2">
+      <div class="card-img-wrap">
+        <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80" alt="Базовый гардероб" loading="lazy" />
+      </div>
+      <div class="card-overlay">
+        <span class="card-tag">Классика</span>
+        <h3 class="card-name">Базовый гардероб</h3>
+        <a href="#products" class="card-link">
+          Смотреть образы
+          <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="collection-card reveal reveal-delay-3">
+      <div class="card-img-wrap">
+        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600&q=80" alt="Street Style" loading="lazy" />
+      </div>
+      <div class="card-overlay">
+        <span class="card-tag">Тренд</span>
+        <h3 class="card-name">Street Style</h3>
+        <a href="#products" class="card-link">
+          Смотреть образы
+          <svg class="card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRODUCTS ────────────────────────────────────────── -->
+<section id="products">
+  <div class="collections-header reveal">
+    <div>
+      <p class="section-eyebrow">Каталог</p>
+      <h2 class="section-title">Новые <em>поступления</em></h2>
+    </div>
+  </div>
+  <div class="products-filters reveal">
+    <button class="filter-btn active" onclick="setFilter(this, 'all')">Все</button>
+    <button class="filter-btn" onclick="setFilter(this, 'top')">Верх</button>
+    <button class="filter-btn" onclick="setFilter(this, 'bottom')">Низ</button>
+    <button class="filter-btn" onclick="setFilter(this, 'outerwear')">Верхняя одежда</button>
+    <button class="filter-btn" onclick="setFilter(this, 'dresses')">Платья</button>
+    <button class="filter-btn" onclick="setFilter(this, 'accessories')">Аксессуары</button>
+  </div>
+  <div class="products-grid" id="productsGrid"></div>
+</section>
+
+<!-- ── STORY ───────────────────────────────────────────── -->
+<section id="story">
+  <div class="story-visual reveal">
+    <img class="story-img-main" src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&q=80" alt="Мастерская Lumière" loading="lazy" />
+    <img class="story-img-accent" src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&q=80" alt="Детали кроя" loading="lazy" />
+    <div class="story-year">12</div>
+  </div>
+  <div class="story-text">
+    <p class="section-eyebrow reveal">Наша история</p>
+    <h2 class="section-title reveal">Мода — это не одежда.<br><em>Это ощущение.</em></h2>
+    <p class="story-body reveal">Основанный в Алматы в 2013 году, LUMIÈRE создаёт одежду, в которой пересекаются центральноазиатское наследие и современный европейский силуэт. Каждый крой — это разговор между традицией и сегодняшним днём.</p>
+    <div class="story-pillars">
+      <div class="reveal reveal-delay-1">
+        <div class="pillar-num">100%</div>
+        <div class="pillar-label">Натуральные ткани</div>
+        <div class="pillar-desc">Шерсть, шёлк, органический хлопок</div>
+      </div>
+      <div class="reveal reveal-delay-2">
+        <div class="pillar-num">0</div>
+        <div class="pillar-label">Массового производства</div>
+        <div class="pillar-desc">Малые партии, ручная отделка</div>
+      </div>
+      <div class="reveal reveal-delay-3">
+        <div class="pillar-num">2+</div>
+        <div class="pillar-label">Сезона гарантии</div>
+        <div class="pillar-desc">Ремонт и обновление изделий</div>
+      </div>
+      <div class="reveal reveal-delay-4">
+        <div class="pillar-num">КЗ</div>
+        <div class="pillar-label">Сделано в Казахстане</div>
+        <div class="pillar-desc">Местные мастера и артизаны</div>
+      </div>
+    </div>
+    <a href="#newsletter" class="btn-primary reveal">
+      Наш манифест
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ── EDITORIAL ───────────────────────────────────────── -->
+<section id="editorial">
+  <div class="editorial-header reveal">
+    <p class="section-eyebrow">Лукбук</p>
+    <h2 class="section-title">Образы <em>сезона</em></h2>
+  </div>
+  <div class="h-scroll-track" id="editorialTrack"></div>
+</section>
+
+<!-- ── NEWSLETTER ──────────────────────────────────────── -->
+<section id="newsletter">
+  <p class="section-eyebrow reveal">Сообщество</p>
+  <h2 class="section-title reveal">Будьте <em>первыми</em></h2>
+  <p class="newsletter-sub reveal">Подпишитесь и узнавайте о новых коллекциях, закрытых продажах и вдохновляющих историях раньше всех.</p>
+  <div class="newsletter-form reveal">
+    <input class="newsletter-input" type="email" placeholder="ваш@email.com" id="emailInput" />
+    <button class="newsletter-btn" onclick="subscribeNewsletter()">Подписаться</button>
+  </div>
+</section>
+
+<!-- ── FOOTER ──────────────────────────────────────────── -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">Lumière</div>
+      <p class="footer-brand-desc">Казахстанский бренд одежды, создающий вещи на пересечении традиции и современности.</p>
+      <div class="footer-social">
+        <a href="#" class="social-link" aria-label="Instagram">IG</a>
+        <a href="#" class="social-link" aria-label="TikTok">TK</a>
+        <a href="#" class="social-link" aria-label="Pinterest">PT</a>
+        <a href="#" class="social-link" aria-label="Telegram">TG</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Магазин</p>
+      <ul class="footer-links">
+        <li><a href="#collections">Коллекции</a></li>
+        <li><a href="#products">Новинки</a></li>
+        <li><a href="#products">Распродажа</a></li>
+        <li><a href="#products">Аксессуары</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Информация</p>
+      <ul class="footer-links">
+        <li><a href="#story">О бренде</a></li>
+        <li><a href="#">Устойчивость</a></li>
+        <li><a href="#">Журнал</a></li>
+        <li><a href="#">Карьера</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Поддержка</p>
+      <ul class="footer-links">
+        <li><a href="#">Доставка и оплата</a></li>
+        <li><a href="#">Возврат</a></li>
+        <li><a href="#">Размерная таблица</a></li>
+        <li><a href="#">Связаться с нами</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 LUMIÈRE. Все права защищены.</p>
+    <div class="footer-legal">
+      <a href="#">Политика конфиденциальности</a>
+      <a href="#">Условия использования</a>
+      <a href="#">Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ── CART DRAWER ─────────────────────────────────────── -->
+<div class="cart-overlay" id="cartOverlay" onclick="handleCartOverlayClick(event)">
+  <div class="cart-drawer">
+    <div class="cart-header">
+      <h2 class="cart-title">Корзина</h2>
+      <button class="cart-close" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-total-row">
+        <span class="cart-total-label">Итого</span>
+        <span class="cart-total-price" id="cartTotal">₸0</span>
+      </div>
+      <button class="btn-checkout" onclick="showToast('Переход к оплате...', '💳')">Оформить заказ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ───────────────────────────────────────────── -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✓</span>
+  <span id="toastMsg">Добавлено в корзину</span>
+</div>
+
+<script>
+/* ── DATA ───────────────────────────────────────────────── */
+const products = [
+  { id:1, name:'Пальто Automne', material:'Шерсть / кашемир', price:89000, oldPrice:null, badge:'new', category:'outerwear', img:'https://images.unsplash.com/photo-1548624313-0396c75e4b8e?w=500&q=80' },
+  { id:2, name:'Шёлковое платье Soir', material:'100% шёлк', price:62000, oldPrice:80000, badge:'sale', category:'dresses', img:'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500&q=80' },
+  { id:3, name:'Кашемировый джемпер', material:'Кашемир 12 gg', price:45000, oldPrice:null, badge:'new', category:'top', img:'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=500&q=80' },
+  { id:4, name:'Брюки Ligne', material:'Шерсть / поэстер', price:38000, oldPrice:null, badge:null, category:'bottom', img:'https://images.unsplash.com/photo-1584370848010-d7fe6bc767ec?w=500&q=80' },
+  { id:5, name:'Блузка Lumière', material:'Вискоза', price:28000, oldPrice:35000, badge:'sale', category:'top', img:'https://images.unsplash.com/photo-1594938298603-c8148c4b984e?w=500&q=80' },
+  { id:6, name:'Кожаный ремень', material:'Итальянская кожа', price:15000, oldPrice:null, badge:null, category:'accessories', img:'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&q=80' },
+  { id:7, name:'Юбка Nuage', material:'Органзовый шёлк', price:42000, oldPrice:null, badge:'new', category:'bottom', img:'https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=500&q=80' },
+  { id:8, name:'Шёлковый шарф', material:'Шёлк / хлопок', price:18000, oldPrice:null, badge:null, category:'accessories', img:'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=500&q=80' },
+];
+
+const editorial = [
+  { issue:'Образ 01', title:'Тихая роскошь', subtitle:'Монохром и объём', img:'https://images.unsplash.com/photo-1614252369475-531eba835eb1?w=400&q=80' },
+  { issue:'Образ 02', title:'Земляные тона', subtitle:'Осенняя палитра', img:'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&q=80' },
+  { issue:'Образ 03', title:'Вечерний выход', subtitle:'Шёлк и свет', img:'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=400&q=80' },
+  { issue:'Образ 04', title:'Городской взгляд', subtitle:'Деловой минимализм', img:'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=400&q=80' },
+  { issue:'Образ 05', title:'Утреннее кафе', subtitle:'Повседневная элегантность', img:'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&q=80' },
+  { issue:'Образ 06', title:'Игра текстур', subtitle:'Трикотаж и кожа', img:'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=400&q=80' },
+];
+
+/* ── STATE ──────────────────────────────────────────────── */
+let cart = [];
+let activeFilter = 'all';
+
+/* ── LOADER ──────────────────────────────────────────────── */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+  }, 2200);
+});
+
+/* ── CURSOR ──────────────────────────────────────────────── */
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  cursor.style.left = mouseX + 'px';
+  cursor.style.top  = mouseY + 'px';
+});
+
+function animateCursor() {
+  ringX += (mouseX - ringX) * 0.12;
+  ringY += (mouseY - ringY) * 0.12;
+  ring.style.left = ringX + 'px';
+  ring.style.top  = ringY + 'px';
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+
+document.querySelectorAll('a, button, .collection-card, .product-card, .editorial-card, input').forEach(el => {
+  el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+});
+
+/* ── NAVBAR ──────────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 80);
+});
+
+/* ── MOBILE MENU ─────────────────────────────────────────── */
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('hamburgerBtn');
+  const spans = btn.querySelectorAll('span');
+  const isOpen = menu.classList.toggle('open');
+  if (isOpen) {
+    spans[0].style.transform = 'rotate(45deg) translate(4px, 4px)';
+    spans[1].style.opacity = '0';
+    spans[2].style.transform = 'rotate(-45deg) translate(4px, -4px)';
+  } else {
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+  }
+}
+function closeMobileMenu() {
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.getElementById('hamburgerBtn').querySelectorAll('span').forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+}
+
+/* ── TICKER ──────────────────────────────────────────────── */
+const tickerItems = ['Новая коллекция','Бесплатная доставка от 15 000 ₸','Сделано в Казахстане','Натуральные материалы','Ручная отделка','Возврат 30 дней'];
+const tickerEl = document.getElementById('tickerInner');
+const tickerHTML = [...tickerItems, ...tickerItems].map(t =>
+  `<span class="ticker-item">${t}</span><span class="ticker-item ticker-dot">◆</span>`
+).join('');
+tickerEl.innerHTML = tickerHTML;
+
+/* ── PRODUCTS ────────────────────────────────────────────── */
+function renderProducts(filter) {
+  const grid = document.getElementById('productsGrid');
+  const filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+  grid.innerHTML = '';
+  filtered.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = `product-card reveal reveal-delay-${(i % 4) + 1}`;
+    card.innerHTML = `
+      <div class="product-img-wrap">
+        <img src="${p.img}" alt="${p.name}" loading="lazy" />
+        ${p.badge ? `<span class="product-badge ${p.badge}">${p.badge === 'new' ? 'Новинка' : 'Скидка'}</span>` : ''}
+        <button class="product-quick-add" onclick="addToCart(${p.id})">В корзину</button>
+        <button class="product-wishlist" aria-label="В избранное" onclick="showToast('Добавлено в избранное','♡')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </button>
+      </div>
+      <h3 class="product-name">${p.name}</h3>
+      <p class="product-material">${p.material}</p>
+      <div class="product-price">
+        <span class="price-current${p.oldPrice ? ' price-sale' : ''}">${p.price.toLocaleString('ru-KZ')} ₸</span>
+        ${p.oldPrice ? `<span class="price-old">${p.oldPrice.toLocaleString('ru-KZ')} ₸</span>` : ''}
+      </div>`;
+    grid.appendChild(card);
+    requestAnimationFrame(() => {
+      setTimeout(() => card.classList.add('visible'), i * 60);
+    });
+  });
+}
+
+function setFilter(btn, filter) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = filter;
+  renderProducts(filter);
+}
+
+/* ── EDITORIAL ───────────────────────────────────────────── */
+function renderEditorial() {
+  const track = document.getElementById('editorialTrack');
+  editorial.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'editorial-card';
+    card.innerHTML = `
+      <img class="editorial-img" src="${e.img}" alt="${e.title}" loading="lazy" />
+      <p class="editorial-issue">${e.issue}</p>
+      <h3 class="editorial-title">${e.title}</h3>
+      <p class="editorial-subtitle">${e.subtitle}</p>`;
+    track.appendChild(card);
+  });
+}
+
+/* ── CART ────────────────────────────────────────────────── */
+function addToCart(id) {
+  const product = products.find(p => p.id === id);
+  const existing = cart.find(c => c.id === id);
+  if (existing) existing.qty++;
+  else cart.push({ ...product, qty: 1 });
+  updateCartCount();
+  showToast(`${product.name} добавлен`, '✓');
+  renderCartItems();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(c => c.id !== id);
+  updateCartCount();
+  renderCartItems();
+}
+
+function updateCartCount() {
+  const total = cart.reduce((s, c) => s + c.qty, 0);
+  document.getElementById('cartCount').textContent = total;
+}
+
+function renderCartItems() {
+  const el = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+  if (!cart.length) {
+    el.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛍</div><p class="cart-empty-text">Корзина пуста</p></div>`;
+    footer.style.display = 'none';
+    return;
+  }
+  footer.style.display = 'block';
+  el.innerHTML = cart.map(c => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${c.img}" alt="${c.name}" />
+      <div>
+        <p class="cart-item-name">${c.name}</p>
+        <p class="cart-item-meta">Кол-во: ${c.qty}</p>
+        <button class="cart-item-remove" onclick="removeFromCart(${c.id})">Удалить</button>
+      </div>
+      <div>
+        <p class="cart-item-price">${(c.price * c.qty).toLocaleString('ru-KZ')} ₸</p>
+      </div>
+    </div>`).join('');
+  const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+  document.getElementById('cartTotal').textContent = total.toLocaleString('ru-KZ') + ' ₸';
+}
+
+function openCart() {
+  renderCartItems();
+  document.getElementById('cartOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleCartOverlayClick(e) {
+  if (e.target === document.getElementById('cartOverlay')) closeCart();
+}
+
+/* ── NEWSLETTER ──────────────────────────────────────────── */
+function subscribeNewsletter() {
+  const val = document.getElementById('emailInput').value.trim();
+  if (!val || !val.includes('@')) { showToast('Введите корректный email', '⚠️'); return; }
+  document.getElementById('emailInput').value = '';
+  showToast('Вы подписаны! Спасибо', '🎉');
+}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg, icon = '✓') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = icon;
+  clearTimeout(toastTimer);
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ── REVEAL ON SCROLL ─────────────────────────────────────── */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+function observeReveal() {
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+/* ── PARALLAX HERO ───────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  const wrap = document.querySelector('.hero-image-wrap');
+  if (!wrap) return;
+  const scrollY = window.scrollY;
+  const heroH = document.getElementById('hero').offsetHeight;
+  if (scrollY < heroH) {
+    wrap.style.transform = `translateY(${scrollY * 0.15}px)`;
+  }
+}, { passive: true });
+
+/* ── INIT ────────────────────────────────────────────────── */
+renderProducts('all');
+renderEditorial();
+setTimeout(observeReveal, 100);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeCart();
+});
+</script>
+</body>
+</html>
